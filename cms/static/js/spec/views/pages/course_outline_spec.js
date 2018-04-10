@@ -80,6 +80,7 @@ define(['jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers', 'common/j
                     prereqs: [],
                     prereq: '',
                     prereq_min_score: '',
+                    prereq_min_completion: '',
                     show_correctness: 'always',
                     child_info: {
                         category: 'vertical',
@@ -1023,9 +1024,11 @@ define(['jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers', 'common/j
                     this.$('#is_prereq').prop('checked', true).trigger('change');
                 };
 
-                selectLastPrerequisiteSubsection = function(minScore) {
+                selectLastPrerequisiteSubsection = function(minScore, minCompletion) {
+                    minCompletion = (typeof minCompletion !== 'undefined') ? minCompletion : ''; // eslint-disable-line no-param-reassign
                     this.$('#prereq option:last').prop('selected', true).trigger('change');
                     this.$('#prereq_min_score').val(minScore).trigger('keyup');
+                    this.$('#prereq_min_completion').val(minCompletion).trigger('keyup');
                 };
 
                 // Helper to validate oft-checked additional option fields' visibility
@@ -1045,6 +1048,7 @@ define(['jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers', 'common/j
                     delete mockSubsectionJSON.prereqs;
                     delete mockSubsectionJSON.prereq;
                     delete mockSubsectionJSON.prereq_min_score;
+                    delete mockSubsectionJSON.prereq_min_completion;
                     return createMockCourseJSON({
                         enable_proctored_exams: false,
                         enable_timed_exams: false
@@ -1641,7 +1645,8 @@ define(['jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers', 'common/j
                             createMockSubsectionJSON({
                                 prereqs: [{block_usage_key: 'usage_key', block_display_name: 'Prereq Subsection 1'}],
                                 prereq: 'usage_key',
-                                prereq_min_score: '80'
+                                prereq_min_score: '80',
+                                prereq_min_completion: '50'
                             }, [])
                         ])
                     ]);
@@ -1651,6 +1656,8 @@ define(['jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers', 'common/j
                     expect($('#prereq option:selected').val()).toBe('usage_key');
                     expect($('#prereq_min_score_input').css('display')).not.toBe('none');
                     expect($('#prereq_min_score').val()).toBe('80');
+                    expect($('#prereq_min_completion_input').css('display')).not.toBe('none');
+                    expect($('#prereq_min_completion').val()).toBe('50');
                 });
 
                 it('can display validation error on non-integer minimum score', function() {
@@ -1663,12 +1670,24 @@ define(['jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers', 'common/j
                     ]);
                     createCourseOutlinePage(this, mockCourseWithPreqsJSON, false);
                     outlinePage.$('.outline-subsection .configure-button').click();
-                    selectLastPrerequisiteSubsection('abc');
+                    selectLastPrerequisiteSubsection('abc', '50');
                     expect($('#prereq_min_score_error').css('display')).not.toBe('none');
+                    expect($('#prereq_min_completion_error').css('display')).toBe('none');
                     expect($('.wrapper-modal-window .action-save').prop('disabled')).toBe(true);
                     expect($('.wrapper-modal-window .action-save').hasClass('is-disabled')).toBe(true);
-                    selectLastPrerequisiteSubsection('5.5');
+                    selectLastPrerequisiteSubsection('50', 'abc');
+                    expect($('#prereq_min_score_error').css('display')).toBe('none');
+                    expect($('#prereq_min_completion_error').css('display')).not.toBe('none');
+                    expect($('.wrapper-modal-window .action-save').prop('disabled')).toBe(true);
+                    expect($('.wrapper-modal-window .action-save').hasClass('is-disabled')).toBe(true);
+                    selectLastPrerequisiteSubsection('5.5', '50');
                     expect($('#prereq_min_score_error').css('display')).not.toBe('none');
+                    expect($('#prereq_min_completion_error').css('display')).toBe('none');
+                    expect($('.wrapper-modal-window .action-save').prop('disabled')).toBe(true);
+                    expect($('.wrapper-modal-window .action-save').hasClass('is-disabled')).toBe(true);
+                    selectLastPrerequisiteSubsection('50', '5.5');
+                    expect($('#prereq_min_score_error').css('display')).toBe('none');
+                    expect($('#prereq_min_completion_error').css('display')).not.toBe('none');
                     expect($('.wrapper-modal-window .action-save').prop('disabled')).toBe(true);
                     expect($('.wrapper-modal-window .action-save').hasClass('is-disabled')).toBe(true);
                 });
@@ -1683,12 +1702,24 @@ define(['jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers', 'common/j
                     ]);
                     createCourseOutlinePage(this, mockCourseWithPreqsJSON, false);
                     outlinePage.$('.outline-subsection .configure-button').click();
-                    selectLastPrerequisiteSubsection('-5');
+                    selectLastPrerequisiteSubsection('-5', '50');
                     expect($('#prereq_min_score_error').css('display')).not.toBe('none');
+                    expect($('#prereq_min_completion_error').css('display')).toBe('none');
                     expect($('.wrapper-modal-window .action-save').prop('disabled')).toBe(true);
                     expect($('.wrapper-modal-window .action-save').hasClass('is-disabled')).toBe(true);
-                    selectLastPrerequisiteSubsection('105');
+                    selectLastPrerequisiteSubsection('50', '-5');
+                    expect($('#prereq_min_score_error').css('display')).toBe('none');
+                    expect($('#prereq_min_completion_error').css('display')).not.toBe('none');
+                    expect($('.wrapper-modal-window .action-save').prop('disabled')).toBe(true);
+                    expect($('.wrapper-modal-window .action-save').hasClass('is-disabled')).toBe(true);
+                    selectLastPrerequisiteSubsection('105', '50');
                     expect($('#prereq_min_score_error').css('display')).not.toBe('none');
+                    expect($('#prereq_min_completion_error').css('display')).toBe('none');
+                    expect($('.wrapper-modal-window .action-save').prop('disabled')).toBe(true);
+                    expect($('.wrapper-modal-window .action-save').hasClass('is-disabled')).toBe(true);
+                    selectLastPrerequisiteSubsection('50', '105');
+                    expect($('#prereq_min_score_error').css('display')).toBe('none');
+                    expect($('#prereq_min_completion_error').css('display')).not.toBe('none');
                     expect($('.wrapper-modal-window .action-save').prop('disabled')).toBe(true);
                     expect($('.wrapper-modal-window .action-save').hasClass('is-disabled')).toBe(true);
                 });
@@ -1704,14 +1735,18 @@ define(['jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers', 'common/j
                     createCourseOutlinePage(this, mockCourseWithPreqsJSON, false);
                     outlinePage.$('.outline-subsection .configure-button').click();
                     selectAdvancedSettings();
-                    selectLastPrerequisiteSubsection('');
+                    selectLastPrerequisiteSubsection('', '');
                     expect($('#prereq_min_score_error').css('display')).toBe('none');
-                    selectLastPrerequisiteSubsection('80');
+                    expect($('#prereq_min_completion_error').css('display')).toBe('none');
+                    selectLastPrerequisiteSubsection('80', '50');
+                    expect($('#prereq_min_completion_error').css('display')).toBe('none');
                     expect($('#prereq_min_score_error').css('display')).toBe('none');
-                    selectLastPrerequisiteSubsection('0');
+                    selectLastPrerequisiteSubsection('0', '0');
                     expect($('#prereq_min_score_error').css('display')).toBe('none');
-                    selectLastPrerequisiteSubsection('100');
+                    expect($('#prereq_min_completion_error').css('display')).toBe('none');
+                    selectLastPrerequisiteSubsection('100', '100');
                     expect($('#prereq_min_score_error').css('display')).toBe('none');
+                    expect($('#prereq_min_completion_error').css('display')).toBe('none');
                 });
 
                 it('release date, due date, grading type, and staff lock can be cleared.', function() {

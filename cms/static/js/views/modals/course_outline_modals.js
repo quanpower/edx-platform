@@ -565,58 +565,72 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
         className: 'edit-settings-access',
         events: {
             'change #prereq': 'handlePrereqSelect',
-            'change input[name=fulfillment_type]': 'toggleScore',
-            'keyup #prereq_min_score': 'validateMinScore'
+            'keyup #prereq_min_completion': 'validateScoreAndCompletion',
+            'keyup #prereq_min_score': 'validateScoreAndCompletion'
         },
         afterRender: function() {
             AbstractEditor.prototype.afterRender.call(this);
             var prereq = this.model.get('prereq') || '';
             var prereq_min_score = this.model.get('prereq_min_score') || '';
+            var prereq_min_completion = this.model.get('prereq_min_completion') || '';
             this.$('#is_prereq').prop('checked', this.model.get('is_prereq'));
             this.$('#prereq option[value="' + prereq + '"]').prop('selected', true);
             this.$('#prereq_min_score').val(prereq_min_score);
             this.$('#prereq_min_score_input').toggle(prereq.length > 0);
-            this.toggleScore();
-        },
-        toggleScore: function() {
-            var fulfillment_type = $('input[name=fulfillment_type]:checked').val();
-            var showScore = (fulfillment_type === 'score') ? true : false;
-            this.$('#prereq_min_score_input').toggle(showScore);
-            this.$('#prereq_min_completion_input').toggle(!showScore);
+            this.$('#prereq_min_completion').val(prereq_min_completion);
+            this.$('#prereq_min_completion_input').toggle(prereq.length > 0);
         },
         handlePrereqSelect: function() {
             var showPrereqInput = this.$('#prereq option:selected').val().length > 0;
             this.$('#prereq_min_score_input').toggle(showPrereqInput);
+            this.$('#prereq_min_completion_input').toggle(showPrereqInput);
         },
-        validateMinScore: function() {
+        isValidPercentage: function(val) {
+            var intVal = parseInt(val);
+            return (typeof(val) !== "undefind" && val !== "" && intVal >= 0 && intVal <= 100 && String(intVal) === val);
+        },
+        validateScoreAndCompletion: function() {
+            var invalidInput = false;
             var minScore = this.$('#prereq_min_score').val().trim();
-            var minScoreInt = parseInt(minScore);
-            // minScore needs to be an integer between 0 and 100
-            if (
-                minScore &&
-                (
-                    typeof(minScoreInt) === 'undefined' ||
-                    String(minScoreInt) !== minScore ||
-                    minScoreInt < 0 ||
-                    minScoreInt > 100
-                )
-            ) {
+            var minCompletion = this.$('#prereq_min_completion').val().trim();
+
+            if(minScore !== "" && !this.isValidPercentage(minScore)) {
+                invalidInput = true;
                 this.$('#prereq_min_score_error').show();
-                BaseModal.prototype.disableActionButton.call(this.parent, 'save');
             } else {
                 this.$('#prereq_min_score_error').hide();
+
+            }
+
+            if(minCompletion !== "" && !this.isValidPercentage(minCompletion)) {
+                invalidInput = true;
+                this.$('#prereq_min_completion_error').show();
+            } else {
+                this.$('#prereq_min_completion_error').hide();
+
+            }
+            if (invalidInput){
+                BaseModal.prototype.disableActionButton.call(this.parent, 'save');
+            }
+            else {
                 BaseModal.prototype.enableActionButton.call(this.parent, 'save');
             }
         },
         getRequestData: function() {
             var minScore = this.$('#prereq_min_score').val();
+            var minCompletion = this.$('#prereq_min_completion').val();
             if (minScore) {
                 minScore = minScore.trim();
             }
+            if (minCompletion) {
+                minCompletion = minCompletion.trim();
+            }
+
             return {
                 isPrereq: this.$('#is_prereq').is(':checked'),
                 prereqUsageKey: this.$('#prereq option:selected').val(),
-                prereqMinScore: minScore
+                prereqMinScore: minScore,
+                prereqMinCompletion: minCompletion
             };
         }
     });

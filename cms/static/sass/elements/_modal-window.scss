@@ -674,6 +674,10 @@
           width: ($baseline*7);
         }
 
+        input.percentage {
+          width: ($baseline*4);
+        }
+
         .tip {
           @extend %t-copy-sub1;
 

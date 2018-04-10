@@ -145,17 +145,23 @@ class TestGatingApi(ModuleStoreTestCase, MilestonesTestCaseMixin):
         """ Test test_required_content """
 
         gating_api.add_prerequisite(self.course.id, self.seq1.location)
-        gating_api.set_required_content(self.course.id, self.seq2.location, self.seq1.location, 100)
+        gating_api.set_required_content(self.course.id, self.seq2.location, self.seq1.location, 100, 100)
 
-        prereq_content_key, min_score = gating_api.get_required_content(self.course.id, self.seq2.location)
+        prereq_content_key, min_score, min_completion = gating_api.get_required_content(
+            self.course.id, self.seq2.location
+        )
         self.assertEqual(prereq_content_key, unicode(self.seq1.location))
         self.assertEqual(min_score, 100)
+        self.assertEqual(min_completion, 100)
 
-        gating_api.set_required_content(self.course.id, self.seq2.location, None, None)
+        gating_api.set_required_content(self.course.id, self.seq2.location, None, None, None)
 
-        prereq_content_key, min_score = gating_api.get_required_content(self.course.id, self.seq2.location)
+        prereq_content_key, min_score, min_completion = gating_api.get_required_content(
+            self.course.id, self.seq2.location
+        )
         self.assertIsNone(prereq_content_key)
         self.assertIsNone(min_score)
+        self.assertIsNone(min_completion)
 
     def test_get_gated_content(self):
         """
@@ -197,16 +203,16 @@ class TestGatingApi(ModuleStoreTestCase, MilestonesTestCaseMixin):
             mock_grade.return_value = 75
             lms_gating_api.evaluate_prerequisite(
                 self.course,
-                Mock(location=self.seq1.location),
                 student,
+                Mock(location=self.seq1.location),
             )
             self.assertFalse(gating_api.is_gate_fulfilled(self.course.id, self.seq1.location, student.id))
 
             mock_grade.return_value = 100
             lms_gating_api.evaluate_prerequisite(
                 self.course,
-                Mock(location=self.seq1.location),
                 student,
+                Mock(location=self.seq1.location),
             )
             self.assertTrue(gating_api.is_gate_fulfilled(self.course.id, self.seq1.location, student.id))
 
