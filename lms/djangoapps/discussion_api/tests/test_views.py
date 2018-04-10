@@ -165,10 +165,7 @@ class RetireViewTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
         super(RetireViewTest, self).setUp()
         self.superuser = SuperuserFactory()
         self.retired_username = get_retired_username_by_username(self.user.username)
-        self.url = reverse(
-            "retire_discussion_user",
-            kwargs={"username": text_type(self.user.username)}
-        )
+        self.url = reverse("retire_discussion_user")
 
     def assert_response_correct(self, response, expected_status, expected_content):
         """
@@ -193,7 +190,8 @@ class RetireViewTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
         """
         self.register_get_user_retire_response(self.user)
         headers = self.build_jwt_headers(self.superuser)
-        response = self.client.post(self.url, {'retired_username': self.retired_username}, **headers)
+        data = {'username': self.user.username, 'retired_username': self.retired_username}
+        response = self.client.post(self.url, data, **headers)
         self.assert_response_correct(response, 204, "")
 
     def test_bad_hash(self):
@@ -201,7 +199,8 @@ class RetireViewTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
         Check that we fail on a hash mismatch with an appropriate error
         """
         headers = self.build_jwt_headers(self.superuser)
-        response = self.client.post(self.url, {'retired_username': "this will never match"}, **headers)
+        data = {'username': self.user.username, 'retired_username': "this will never match"}
+        response = self.client.post(self.url, data, **headers)
         self.assert_response_correct(response, 500, '"Mismatched hashed_username, bad salt?"')
 
     def test_downstream_forums_error(self):
@@ -210,7 +209,8 @@ class RetireViewTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
         """
         self.register_get_user_retire_response(self.user, status=500, body="Server error")
         headers = self.build_jwt_headers(self.superuser)
-        response = self.client.post(self.url, {'retired_username': self.retired_username}, **headers)
+        data = {'username': self.user.username, 'retired_username': self.retired_username}
+        response = self.client.post(self.url, data, **headers)
         self.assert_response_correct(response, 500, '"Server error"')
 
     def test_nonexistent_user(self):
@@ -218,19 +218,15 @@ class RetireViewTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
         Check that we handle unknown users appropriately
         """
         nonexistent_username = "nonexistent user"
-        self.url = reverse(
-            "retire_discussion_user",
-            kwargs={"username": nonexistent_username}
-        )
         self.retired_username = get_retired_username_by_username(nonexistent_username)
-
+        data = {'username': nonexistent_username, 'retired_username': self.retired_username}
         headers = self.build_jwt_headers(self.superuser)
-        response = self.client.post(self.url, {'retired_username': self.retired_username}, **headers)
+        response = self.client.post(self.url, data, **headers)
         self.assert_response_correct(response, 404, None)
 
     def test_not_authenticated(self):
         """
-        Override the parent implementation of this, we auth differently
+        Override the parent implementation of this, we JWT auth for this API
         """
         pass
 

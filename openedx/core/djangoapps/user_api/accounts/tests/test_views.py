@@ -936,7 +936,7 @@ class TestAccountRetireMailings(TestCase):
         UserOrgTag.objects.create(user=self.test_user, key='email-optin', org="foo", value="True")
         UserOrgTag.objects.create(user=self.test_user, key='email-optin', org="bar", value="True")
 
-        self.url = reverse('accounts_retire_mailings', kwargs={'username': self.test_user.username})
+        self.url = reverse('accounts_retire_mailings')
 
     def build_jwt_headers(self, user):
         """
@@ -950,7 +950,7 @@ class TestAccountRetireMailings(TestCase):
 
     def build_post(self, user):
         retired_username = get_retired_username_by_username(user.username)
-        return {'retired_username': retired_username}
+        return {'username': user.username, 'retired_username': retired_username}
 
     def assert_status_and_tag_count(self, headers, expected_status=status.HTTP_204_NO_CONTENT, expected_tag_count=2,
                                     expected_tag_value="False", expected_content=None):

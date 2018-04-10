@@ -51,14 +51,14 @@ urlpatterns = [
         name='accounts_deactivation'
     ),
     url(
-        r'^v1/accounts/{}/retire_mailings/$'.format(settings.USERNAME_PATTERN),
-        AccountRetireMailingsView.as_view(),
-        name='accounts_retire_mailings'
-    ),
-    url(
         r'^v1/accounts/{}/verification_status/$'.format(settings.USERNAME_PATTERN),
         PhotoVerificationStatusView.as_view(),
         name='verification_status'
+    ),
+    url(
+        r'^v1/accounts/retire_mailings/$',
+        AccountRetireMailingsView.as_view(),
+        name='accounts_retire_mailings'
     ),
     url(
         r'^v1/validation/registration$',

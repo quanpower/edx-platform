@@ -265,7 +265,7 @@ class AccountRetireMailingsView(APIView):
     authentication_classes = (JwtAuthentication, )
     permission_classes = (permissions.IsAuthenticated, CanRetireUser)
 
-    def post(self, request, username):
+    def post(self, request):
         """
         POST /api/user/v1/accounts/{username}/retire_mailings/
 
@@ -274,6 +274,7 @@ class AccountRetireMailingsView(APIView):
         -  Update UserOrgTags to opt the user out of org emails
         -  Call Sailthru API to force opt-out the user from all email lists
         """
+        username = request.data['username']
         user_model = get_user_model()
         retired_username = request.data['retired_username']
 

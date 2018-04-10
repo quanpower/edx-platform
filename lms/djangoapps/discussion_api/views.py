@@ -543,11 +543,12 @@ class RetireUserView(APIView):
     authentication_classes = (JwtAuthentication,)
     permission_classes = (permissions.IsAuthenticated, CanRetireUser)
 
-    def post(self, request, username):
+    def post(self, request):
         """
         Implements the retirement endpoint.
         """
         user_model = get_user_model()
+        username = request.data['username']
         retired_username = request.data['retired_username']
 
         try:
