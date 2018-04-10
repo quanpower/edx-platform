@@ -14,7 +14,7 @@ from six import text_type
 from lms.djangoapps.badges.utils import badges_enabled
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.core.djangoapps.user_api import errors
-from openedx.core.djangoapps.user_api.models import UserPreference
+from openedx.core.djangoapps.user_api.models import RetirementState, UserRetirementStatus, UserPreference
 from openedx.core.djangoapps.user_api.serializers import ReadOnlyFieldsSerializerMixin
 from student.models import UserProfile, LanguageProficiency, SocialLink
 
@@ -330,6 +330,37 @@ class AccountLegacyProfileSerializer(serializers.HyperlinkedModelSerializer, Rea
         instance.save()
 
         return instance
+
+
+class RetirementUserSerializer(serializers.ModelSerializer):
+    """
+    Serialize a small subset of user data for use in RetirementStatus APIs
+    """
+    class Meta(object):
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name')
+
+
+class RetirementStateSerializer(serializers.ModelSerializer):
+    """
+    Serialize a small subset of user data for use in RetirementStatus APIs
+    """
+    class Meta(object):
+        model = RetirementState
+        fields = ('id', 'state_name', 'state_execution_order')
+
+
+class UserRetirementStatusSerializer(serializers.ModelSerializer):
+    """
+    Perform serialization for the RetirementStatus model
+    """
+    user = RetirementUserSerializer(read_only=True)
+    current_state = RetirementStateSerializer(read_only=True)
+    last_state = RetirementStateSerializer(read_only=True)
+
+    class Meta(object):
+        model = UserRetirementStatus
+        exclude = ['responses', ]
 
 
 def get_extended_profile(user_profile):
