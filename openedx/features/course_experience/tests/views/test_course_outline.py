@@ -254,8 +254,8 @@ class TestCourseOutlinePageWithPrerequisites(SharedModuleStoreTestCase, Mileston
         with patch('openedx.core.lib.gating.api._get_subsection_percentage', Mock(return_value=100)):
             lms_gating_api.evaluate_prerequisite(
                 self.course,
-                self.user,
                 Mock(location=self.course_blocks['prerequisite'].location),
+                self.user,
             )
 
         response = self.client.get(course_home_url(course))

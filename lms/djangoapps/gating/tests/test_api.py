@@ -85,7 +85,7 @@ class TestEvaluatePrerequisite(GatingTestCase, MilestonesTestCaseMixin):
         self._setup_gating_milestone(50)
         mock_score.return_value = module_score
 
-        evaluate_prerequisite(self.course, self.user, self.subsection_grade)
+        evaluate_prerequisite(self.course, self.subsection_grade, self.user)
         self.assertEqual(milestones_api.user_has_milestone(self.user_dict, self.prereq_milestone), result)
 
     @patch('openedx.core.lib.gating.api._get_subsection_percentage')
@@ -97,17 +97,17 @@ class TestEvaluatePrerequisite(GatingTestCase, MilestonesTestCaseMixin):
         mock_score.return_value = module_score
         mock_min_score.return_value = 100
 
-        evaluate_prerequisite(self.course, self.user, self.subsection_grade)
+        evaluate_prerequisite(self.course, self.subsection_grade, self.user)
         self.assertEqual(milestones_api.user_has_milestone(self.user_dict, self.prereq_milestone), result)
 
     @patch('openedx.core.lib.gating.api._get_subsection_percentage')
     def test_no_prerequisites(self, mock_score):
-        evaluate_prerequisite(self.course, self.user, self.subsection_grade)
+        evaluate_prerequisite(self.course, self.subsection_grade, self.user)
         self.assertFalse(mock_score.called)
 
     @patch('openedx.core.lib.gating.api._get_subsection_percentage')
     def test_no_gated_content(self, mock_score):
         gating_api.add_prerequisite(self.course.id, self.seq1.location)
 
-        evaluate_prerequisite(self.course, self.user, self.subsection_grade)
+        evaluate_prerequisite(self.course, self.subsection_grade, self.user)
         self.assertFalse(mock_score.called)

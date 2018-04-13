@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 @gating_api.gating_enabled(default=False)
-def evaluate_prerequisite(course, user, subsection_grade=None, subsection_completion=None):
+def evaluate_prerequisite(course, subsection_grade, user):
     """
     Evaluates any gating milestone relationships attached to the given
     subsection. If the subsection_grade and subsection_completion meets
@@ -30,9 +30,12 @@ def evaluate_prerequisite(course, user, subsection_grade=None, subsection_comple
 
         gated_content = gated_content_milestones.get(prereq_milestone['id'])
         if gated_content:
+            grade_percentage = subsection_grade.percent_graded * 100.0 \
+                if hasattr(subsection_grade, 'percent_graded') else None
+
             for milestone in gated_content:
                 gating_api.update_milestone(
-                    milestone, subsection_grade, prereq_milestone, user.id, subsection_completion
+                    milestone, subsection_grade.location, prereq_milestone, user, grade_percentage
                 )
 
 

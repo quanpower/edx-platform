@@ -17,8 +17,6 @@
                         </select>
                     </label>
                 </li>
-            </ul>
-            <ul class="list-fields list-input">
                 <li id="prereq_min_score_input" class="field field-input input-cosmetic">
                     <label class="label">
                         <%- gettext('Minimum Score:') %>
@@ -31,12 +29,12 @@
                         <input type="text" id="prereq_min_completion" name="prereq_min_completion" class="input input-text percentage" maxlength="3" />
                     </label>
                 </li>
-                <div id="prereq_min_score_error" class="message-status error">
+                <li id="prereq_min_score_error" class="message-status error">
                     <%- gettext('The minimum score percentage must be a whole number between 0 and 100.') %>
-                </div>
-                <div id="prereq_min_completion_error" class="message-status error">
+                </li>
+                <li id="prereq_min_completion_error" class="message-status error">
                     <%- gettext('The minimum completion percentage must be a whole number between 0 and 100.') %>
-                </div>
+                </li>
             </ul>
         </div>
     <% } %>

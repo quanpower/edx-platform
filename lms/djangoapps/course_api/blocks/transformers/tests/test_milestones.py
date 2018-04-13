@@ -173,8 +173,8 @@ class MilestonesTransformerTestCase(CourseStructureTestCase, MilestonesTestCaseM
         with patch('openedx.core.lib.gating.api._get_subsection_percentage', Mock(return_value=100)):
             lms_gating_api.evaluate_prerequisite(
                 self.course,
-                self.user,
                 Mock(location=self.blocks[gating_block_ref].location),
+                self.user,
             )
 
         with self.assertNumQueries(6):
@@ -208,8 +208,8 @@ class MilestonesTransformerTestCase(CourseStructureTestCase, MilestonesTestCaseM
         with patch('openedx.core.lib.gating.api._get_subsection_percentage', Mock(return_value=100)):
             lms_gating_api.evaluate_prerequisite(
                 self.course,
-                self.user,
                 Mock(location=self.blocks['A'].location),
+                self.user,
             )
         self.get_blocks_and_check_against_expected(self.user, self.ALL_BLOCKS)
 

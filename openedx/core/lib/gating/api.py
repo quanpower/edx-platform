@@ -4,10 +4,11 @@ API for the gating djangoapp
 import json
 import logging
 
-from completion.models import BlockCompletion
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
+
+from completion.models import BlockCompletion
 from lms.djangoapps.courseware.access import _has_access_to_course
 from lms.djangoapps.course_blocks.api import get_course_blocks
 from lms.djangoapps.grades.subsection_grade_factory import SubsectionGradeFactory
@@ -381,46 +382,37 @@ def compute_is_prereq_met(content_id, user_id, recalc_on_unmet=False):
             'url': reverse('jump_to', kwargs={'course_id': course_key, 'location': subsection_usage_key}),
             'display_name': subsection.display_name
         }
-
-        subsection_grade, subsection_completion = None, None
-        try:
-            subsection_structure = get_course_blocks(student, subsection_usage_key)
-            if any(subsection_structure):
-                subsection_grade_factory = SubsectionGradeFactory(student, course_structure=subsection_structure)
-                if subsection_usage_key in subsection_structure:
-                    # this will force a recalcuation of the subsection grade
-                    subsection_grade = subsection_grade_factory.update(subsection_structure[subsection_usage_key], persist_grade=False)
-
-            subsection_completion = _get_subsection_completion_percentage(student, course_key, subsection_structure)
-            prereq_met = update_milestone(milestone, subsection_grade, milestone, user_id, subsection_completion)
-        except ItemNotFoundError as err:
-            log.warning("Could not find course_block for subsection=%s error=%s", subsection_usage_key, err)
+        prereq_met = update_milestone(milestone, subsection_usage_key, milestone, student)
 
     return prereq_met, prereq_meta_info
 
 
-def update_milestone(milestone, subsection_grade, prereq_milestone, user_id, subsection_completion):
+def update_milestone(milestone, usage_key, prereq_milestone, user, grade_percentage=None, completion_percentage=None):
     """
     Updates the milestone record based on evaluation of prerequisite met.
 
     Arguments:
         milestone: The gated milestone being evaluated
-        subsection_grade: The grade of the prerequisite subsection
-        prerequisite_milestone: The gating milestone
-        user_id: The id of the user
-        subsection_completion: Completion of prerequisite subsection
+        usage_key: Usage key of the prerequisite subsection
+        prereq_milestone: The gating milestone
+        user: The user who has fulfilled milestone
+        grade_percentage: Grade percentage of prerequisite subsection
+        completion_percentage: Completion percentage of prerequisite subsection
 
     Returns:
         True if prerequisite has been met, False if not
     """
     min_score, min_completion = _get_minimum_required_percentage(milestone)
-    subsection_grade_percentage = _get_subsection_percentage(subsection_grade)
-    subsection_completion_percentage = subsection_completion if subsection_completion else 0
-    if subsection_grade_percentage >= min_score and subsection_completion_percentage >= min_completion:
-        milestones_helpers.add_user_milestone({'id': user_id}, prereq_milestone)
+    if not grade_percentage:
+        grade_percentage = get_subsection_grade_percentage(usage_key, user) if min_score > 0 else 0
+    if not completion_percentage and min_completion > 0:
+        completion_percentage = get_subsection_completion_percentage(usage_key, user) if min_completion > 0 else 0
+
+    if grade_percentage >= min_score and completion_percentage >= min_completion:
+        milestones_helpers.add_user_milestone({'id': user.id}, prereq_milestone)
         return True
     else:
-        milestones_helpers.remove_user_milestone({'id': user_id}, prereq_milestone)
+        milestones_helpers.remove_user_milestone({'id': user.id}, prereq_milestone)
         return False
 
 
@@ -431,22 +423,65 @@ def _get_gating_block_id(milestone):
     return milestone.get('namespace', '').replace(GATING_NAMESPACE_QUALIFIER, '')
 
 
-def _get_subsection_completion_percentage(user, course_key, subsection_structure):
+def get_subsection_grade_percentage(subsection_usage_key, user):
     """
-    Return completion percentage for a subsection
+    Computes grade percentage for a subsection in a given course for a user
+
+    Arguments:
+        subsection_usage_key: key of subsection
+        user: The user whose grade needs to be computed
+
+    Returns:
+        User's grade percentage for given subsection
     """
-    completeable_blocks = [
-        block for block in subsection_structure
-        if block.block_type not in ['sequential', 'vertical']
-    ]
-    if not completeable_blocks:
-        return 0
-    completed_blocks = 0
-    course_block_completions = BlockCompletion.get_course_completions(user, course_key)
-    for block in completeable_blocks:
-        if course_block_completions.get(block):
-            completed_blocks += course_block_completions.get(block)
-    return min(100 * (completed_blocks / float(len(completeable_blocks))), 100)
+    import pdb; pdb.set_trace()
+    subsection_grade_percentage = 0.0
+    try:
+        subsection_structure = get_course_blocks(user, subsection_usage_key)
+        if any(subsection_structure):
+            subsection_grade_factory = SubsectionGradeFactory(user, course_structure=subsection_structure)
+            if subsection_usage_key in subsection_structure:
+                # this will force a recalculation of the subsection grade
+                subsection_grade = subsection_grade_factory.update(
+                    subsection_structure[subsection_usage_key], persist_grade=False
+                )
+                subsection_grade_percentage = subsection_grade.percent_graded * 100.0
+    except ItemNotFoundError as err:
+        log.warning("Could not find course_block for subsection=%s error=%s", subsection_usage_key, err)
+    return subsection_grade_percentage
+
+
+def get_subsection_completion_percentage(subsection_usage_key, user):
+    """
+    Computes completion percentage for a subsection in a given course for a user
+    Arguments:
+        subsection_usage_key: key of subsection
+        user: The user whose completion percentage needs to be computed
+    Returns:
+        User's completion percentage for given subsection
+    """
+
+    subsection_completion_percentage = 0.0
+    try:
+        subsection_structure = get_course_blocks(user, subsection_usage_key)
+        if any(subsection_structure):
+            completable_blocks = [
+                block for block in subsection_structure
+                if block.block_type not in ['sequential', 'vertical']
+            ]
+            if not completable_blocks:
+                return 0
+            completed_blocks = 0
+            course_block_completions = BlockCompletion.get_course_completions(user, subsection_usage_key.course_key)
+            for block in completable_blocks:
+                if course_block_completions.get(block):
+                    completed_blocks += course_block_completions.get(block)
+            subsection_completion_percentage = min(100 * (completed_blocks / float(len(completable_blocks))), 100)
+
+    except ItemNotFoundError as err:
+        log.warning("Could not find course_block for subsection=%s error=%s", subsection_usage_key, err)
+
+    return subsection_completion_percentage
 
 
 def _get_minimum_required_percentage(milestone):
@@ -466,7 +501,7 @@ def _get_minimum_required_percentage(milestone):
                 json.dumps(milestone)
             )
         try:
-            min_completion = int(requirements.get('min_completion'))
+            min_completion = int(requirements.get('min_completion', 0))
         except (ValueError, TypeError):
             log.warning(
                 u'Gating: Failed to find minimum completion percentage for gating milestone %s, defaulting to 100',
@@ -479,7 +514,4 @@ def _get_subsection_percentage(subsection_grade):
     """
     Returns the percentage value of the given subsection_grade.
     """
-    if not subsection_grade:
-        return 0
-
     return subsection_grade.percent_graded * 100.0
