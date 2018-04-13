@@ -183,7 +183,6 @@ class CourseCohortsSettings(models.Model):
     # Note that although a default value is specified here for always_cohort_inline_discussions (False),
     # in reality the default value at the time that cohorting is enabled for a course comes from
     # course_module.always_cohort_inline_discussions (via `migrate_cohort_settings`).
-    # pylint: disable=invalid-name
     # DEPRECATED-- DO NOT USE: Instead use `CourseDiscussionSettings.always_divide_inline_discussions`
     # via `get_course_discussion_settings` or `set_course_discussion_settings`.
     always_cohort_inline_discussions = models.BooleanField(default=False)
@@ -238,6 +237,9 @@ class CourseCohort(models.Model):
 
 
 class UnregisteredLearnerCohortAssignments(models.Model):
+    """
+    Tracks the assignment of an unregistered learner to a course's cohort.
+    """
 
     class Meta(object):
         unique_together = (('course_id', 'email'), )
@@ -245,3 +247,23 @@ class UnregisteredLearnerCohortAssignments(models.Model):
     course_user_group = models.ForeignKey(CourseUserGroup)
     email = models.CharField(blank=True, max_length=255, db_index=True)
     course_id = CourseKeyField(max_length=255)
+
+    @classmethod
+    def retire_user(cls, email_to_retire, hashed_email):
+        """
+        Replaces all assignment records for email_to_retire with hashed_email.
+        """
+        #TODO: Call from LMS retirement endpoint
+        # https://openedx.atlassian.net/browse/PLAT-2001
+        cohort_assignments = cls.objects.filter(
+            email=email_to_retire
+        )
+
+        if not cohort_assignments:
+            return False
+
+        for cohort_assignment in cohort_assignments:
+            cohort_assignment.email = hashed_email
+            cohort_assignment.save()
+
+        return True
