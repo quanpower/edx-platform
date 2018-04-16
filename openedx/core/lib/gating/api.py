@@ -405,7 +405,7 @@ def update_milestone(milestone, usage_key, prereq_milestone, user, grade_percent
     min_score, min_completion = _get_minimum_required_percentage(milestone)
     if not grade_percentage:
         grade_percentage = get_subsection_grade_percentage(usage_key, user) if min_score > 0 else 0
-    if not completion_percentage and min_completion > 0:
+    if not completion_percentage:
         completion_percentage = get_subsection_completion_percentage(usage_key, user) if min_completion > 0 else 0
 
     if grade_percentage >= min_score and completion_percentage >= min_completion:
@@ -434,7 +434,6 @@ def get_subsection_grade_percentage(subsection_usage_key, user):
     Returns:
         User's grade percentage for given subsection
     """
-    import pdb; pdb.set_trace()
     subsection_grade_percentage = 0.0
     try:
         subsection_structure = get_course_blocks(user, subsection_usage_key)
@@ -460,7 +459,6 @@ def get_subsection_completion_percentage(subsection_usage_key, user):
     Returns:
         User's completion percentage for given subsection
     """
-
     subsection_completion_percentage = 0.0
     try:
         subsection_structure = get_course_blocks(user, subsection_usage_key)
