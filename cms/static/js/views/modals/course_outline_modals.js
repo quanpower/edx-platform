@@ -571,13 +571,13 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
         afterRender: function() {
             AbstractEditor.prototype.afterRender.call(this);
             var prereq = this.model.get('prereq') || '';
-            var prereq_min_score = this.model.get('prereq_min_score') || '100';
-            var prereq_min_completion = this.model.get('prereq_min_completion') || '100';
+            var prereqMinScore = this.model.get('prereq_min_score') || '100';
+            var prereqMinCompletion = this.model.get('prereq_min_completion') || '100';
             this.$('#is_prereq').prop('checked', this.model.get('is_prereq'));
             this.$('#prereq option[value="' + prereq + '"]').prop('selected', true);
-            this.$('#prereq_min_score').val(prereq_min_score);
+            this.$('#prereq_min_score').val(prereqMinScore);
             this.$('#prereq_min_score_input').toggle(prereq.length > 0);
-            this.$('#prereq_min_completion').val(prereq_min_completion);
+            this.$('#prereq_min_completion').val(prereqMinCompletion);
             this.$('#prereq_min_completion_input').toggle(prereq.length > 0);
         },
         handlePrereqSelect: function() {
@@ -586,33 +586,29 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
             this.$('#prereq_min_completion_input').toggle(showPrereqInput);
         },
         isValidPercentage: function(val) {
-            var intVal = parseInt(val);
-            return (typeof(val) !== "undefind" && val !== "" && intVal >= 0 && intVal <= 100 && String(intVal) === val);
+            var intVal = parseInt(val, 10);
+            return (typeof val !== 'undefined' && val !== '' && intVal >= 0 && intVal <= 100 && String(intVal) === val);
         },
         validateScoreAndCompletion: function() {
             var invalidInput = false;
             var minScore = this.$('#prereq_min_score').val().trim();
             var minCompletion = this.$('#prereq_min_completion').val().trim();
 
-            if(minScore !== "" && !this.isValidPercentage(minScore)) {
+            if (minScore !== '' && !this.isValidPercentage(minScore)) {
                 invalidInput = true;
                 this.$('#prereq_min_score_error').show();
             } else {
                 this.$('#prereq_min_score_error').hide();
-
             }
-
-            if(minCompletion !== "" && !this.isValidPercentage(minCompletion)) {
+            if (minCompletion !== '' && !this.isValidPercentage(minCompletion)) {
                 invalidInput = true;
                 this.$('#prereq_min_completion_error').show();
             } else {
                 this.$('#prereq_min_completion_error').hide();
-
             }
-            if (invalidInput){
+            if (invalidInput) {
                 BaseModal.prototype.disableActionButton.call(this.parent, 'save');
-            }
-            else {
+            } else {
                 BaseModal.prototype.enableActionButton.call(this.parent, 'save');
             }
         },
