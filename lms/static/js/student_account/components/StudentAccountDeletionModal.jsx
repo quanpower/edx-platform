@@ -1,6 +1,9 @@
 /* globals gettext */
+/* eslint-disable react/no-danger */
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Button, Modal, InputText, StatusAlert } from '@edx/paragon/static';
+import StringUtils from 'edx-ui-toolkit/js/utils/string-utils';
 
 class StudentAccountDeletionConfirmationModal extends React.Component {
   constructor(props) {
@@ -8,6 +11,7 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
 
     this.deleteAccount = this.deleteAccount.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.passwordFieldValidation = this.passwordFieldValidation.bind(this);
     this.state = { password: '' };
   }
 
@@ -43,6 +47,13 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
 
   render() {
     const { onClose } = this.props;
+    const loseAccessText = StringUtils.interpolate(
+      gettext('You may also lose access to verified certificates and other program credentials like MicroMasters certificates. If you want to make a copy of these for your records before proceeding with deletion, follow the instructions for {htmlStart}printing or downloading a certificate{htmlEnd}.'),
+      {
+        htmlStart: '<a href="http://edx.readthedocs.io/projects/edx-guide-for-students/en/latest/SFD_certificates.html#printing-a-certificate" target="_blank">',
+        htmlEnd: '</a>',
+      },
+    );
 
     return (
       <Modal
@@ -56,8 +67,8 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
               dialog={(
                 <div>
                   <h2>{ gettext('You have selected “Delete my account.” Deletion of your account and personal data is permanent and cannot be undone. EdX will not be able to recover your account or the data that is deleted.') }</h2>
-                  <p>{ gettext('If you proceed, you will be unable to use this account to take courses on the edX app, edx.org, or any other site hosted by edX. This includes access to edx.org from your employer’s or university’s system and access to private sites offered by MIT xPRO, Wharton Executive Education, and Harvard Medical School.') }</p>
-                  <p>You may also lose access to verified certificates and other program credentials like MicroMasters certificates. If you want to make a copy of these for your records before proceeding with deletion, follow the instructions for printing or downloading a certificate. (link to: http://edx.readthedocs.io/projects/edx-guide-for-students/en/latest/SFD_certificates.html#printing-a-certificate).</p>
+                  <p>{ gettext('If you proceed, you will be unable to use this account to take courses on the edX app, edx.org, or any other site hosted by edX. This includes access to edx.org from your employer’s or university’s system and access to private sites offered by MIT Open Learning, Wharton Online, and Harvard Medical School.') }</p>
+                  <p dangerouslySetInnerHTML={{ __html: loseAccessText }} />
                 </div>
               )}
               dismissible={false}
@@ -86,5 +97,13 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
     );
   }
 }
+
+StudentAccountDeletionConfirmationModal.propTypes = {
+  onClose: PropTypes.func,
+};
+
+StudentAccountDeletionConfirmationModal.defaultProps = {
+  onClose: () => {},
+};
 
 export default StudentAccountDeletionConfirmationModal;

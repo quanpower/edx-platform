@@ -535,6 +535,24 @@
       }
     }
 
+    .account-deletion-details {
+      padding-top: 50px;
+
+      .btn-outline-primary {
+        @extend %ui-clear-button;
+
+        // set styles
+        @extend %btn-pl-default-base;
+
+        @include font-size(18);
+
+        border: 1px solid $blue;
+        color: $blue;
+        padding: 11px 14px;
+        line-height: normal;
+      }
+    }
+
     &:last-child {
       border-bottom: none;
     }
