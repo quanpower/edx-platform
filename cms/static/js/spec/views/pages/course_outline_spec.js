@@ -1025,7 +1025,6 @@ define(['jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers', 'common/j
                 };
 
                 selectLastPrerequisiteSubsection = function(minScore, minCompletion) {
-                    minCompletion = (typeof minCompletion !== 'undefined') ? minCompletion : ''; // eslint-disable-line no-param-reassign
                     this.$('#prereq option:last').prop('selected', true).trigger('change');
                     this.$('#prereq_min_score').val(minScore).trigger('keyup');
                     this.$('#prereq_min_completion').val(minCompletion).trigger('keyup');
@@ -1615,7 +1614,7 @@ define(['jquery', 'edx-ui-toolkit/js/utils/spec-helpers/ajax-helpers', 'common/j
                     ]);
                     createCourseOutlinePage(this, mockCourseWithPreqsJSON, false);
                     outlinePage.$('.outline-subsection .configure-button').click();
-                    selectLastPrerequisiteSubsection('80');
+                    selectLastPrerequisiteSubsection('80', '');
                     expect($('#prereq_min_score_input').css('display')).not.toBe('none');
                     expect($('#prereq option:selected').val()).toBe('usage_key');
                     expect($('#prereq_min_score').val()).toBe('80');

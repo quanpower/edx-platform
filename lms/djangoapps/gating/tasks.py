@@ -28,19 +28,24 @@ def task_evaluate_subsection_completion_milestones(course_id, block_id, user_id)
     course_key = CourseKey.from_string(course_id)
     with store.bulk_operations(course_key):
         course = store.get_course(course_key)
-        if not course.enable_subsection_gating:
-            log.debug("Gating: ignoring evaluation of completion milestone because it disable for course [%s]", course_id)
-        else:
-            user = User.objects.get(id=user_id)
-            course_structure = get_course_blocks(user, store.make_course_usage_key(course_key))
-            completed_block_usage_key = UsageKey.from_string(block_id)
-            subsection_block = _get_subsection_of_block(completed_block_usage_key, course_structure)
-            subsection = course_structure[subsection_block]
+        if not course or not course.enable_subsection_gating:
             log.debug(
-                "Gating: Evaluating completion milestone for subsection [%s] and user [%s]",
-                unicode(subsection.location), user.id
+                "Gating: ignoring evaluation of completion milestone because it disabled for course [%s]", course_id
             )
-            gating_api.evaluate_prerequisite(course, subsection, user)
+        else:
+            try:
+                user = User.objects.get(id=user_id)
+                course_structure = get_course_blocks(user, store.make_course_usage_key(course_key))
+                completed_block_usage_key = UsageKey.from_string(block_id).map_into_course(course.id)
+                subsection_block = _get_subsection_of_block(completed_block_usage_key, course_structure)
+                subsection = course_structure[subsection_block]
+                log.debug(
+                    "Gating: Evaluating completion milestone for subsection [%s] and user [%s]",
+                    unicode(subsection.location), user.id
+                )
+                gating_api.evaluate_prerequisite(course, subsection, user)
+            except KeyError:
+                log.error("Gating: Given prerequisite subsection [%s] not found in course structure", block_id)
 
 
 def _get_subsection_of_block(usage_key, block_structure):
