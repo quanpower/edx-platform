@@ -215,7 +215,7 @@ class TestGatingApi(ModuleStoreTestCase, MilestonesTestCaseMixin):
             mock_grade.return_value = learner_completion
             lms_gating_api.evaluate_prerequisite(
                 self.course,
-                Mock(location=self.seq1.location, percent_graded=learner_score/100.0),
+                Mock(location=self.seq1.location, percent_graded=learner_score / 100.0),
                 student,
             )
             self.assertEqual(
