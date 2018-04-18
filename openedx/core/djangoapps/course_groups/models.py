@@ -261,7 +261,4 @@ class UnregisteredLearnerCohortAssignments(models.Model):
 
         num_deleted_records, _ = cohort_assignments.delete()
 
-        if num_deleted_records > 0:
-            return True
-        else:
-            return False
+        return num_deleted_records > 0
