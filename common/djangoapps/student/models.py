@@ -40,6 +40,7 @@ from django.utils.translation import ugettext_noop
 from django_countries.fields import CountryField
 from edx_rest_api_client.exceptions import SlumberBaseException
 from eventtracking import tracker
+from lms.lib.utils import RetireUserByEmailMixin
 from model_utils.models import TimeStampedModel
 from opaque_keys.edx.django.models import CourseKeyField
 from opaque_keys.edx.keys import CourseKey
@@ -2081,7 +2082,7 @@ class ManualEnrollmentAudit(models.Model):
         return manual_enrollment
 
 
-class CourseEnrollmentAllowed(models.Model):
+class CourseEnrollmentAllowed(RetireUserByEmailMixin, models.Model):
     """
     Table of users (specified by email address strings) who are allowed to enroll in a specified course.
     The user may or may not (yet) exist.  Enrollment by users listed in this table is allowed
@@ -2136,13 +2137,13 @@ class CourseEnrollmentAllowed(models.Model):
         enrolled = CourseEnrollment.objects.users_enrolled_in(course_id=course_id).values_list('email', flat=True)
         return CourseEnrollmentAllowed.objects.filter(course_id=course_id).exclude(email__in=enrolled)
 
-    @classmethod
-    def retire_user(cls, user_email):
-        user_search_results = cls.objects.filter(
-            email=user_email
-        )
-        num_deleted_records, _ = user_search_results.delete()
-        return num_deleted_records > 0
+    # @classmethod
+    # def retire_user(cls, user_email):
+    #     user_search_results = cls.objects.filter(
+    #         email=user_email
+    #     )
+    #     num_deleted_records, _ = user_search_results.delete()
+    #     return num_deleted_records > 0
 
 
 @total_ordering

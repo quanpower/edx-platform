@@ -44,3 +44,13 @@ def is_unit(xblock):
     """
 
     return get_parent_unit(xblock) is None and xblock.get_parent()
+
+class RetireUserByEmailMixin:
+
+    @classmethod
+    def retire_user(cls, user_email):
+        user_search_results = cls.objects.filter(
+            email=user_email
+        )
+        num_deleted_records, _ = user_search_results.delete()
+        return num_deleted_records > 0
