@@ -259,10 +259,9 @@ class UnregisteredLearnerCohortAssignments(models.Model):
             email=email_to_retire
         )
 
-        if not cohort_assignments:
+        num_deleted_records, _ = cohort_assignments.delete()
+
+        if num_deleted_records > 0:
+            return True
+        else:
             return False
-
-        deleted_records = cohort_assignments.delete()
-        assert(deleted_records > 0)
-
-        return True
