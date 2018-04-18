@@ -95,11 +95,8 @@ urlpatterns = [
     # Courseware search endpoints
     url(r'^search/', include('search.urls')),
 
-    # Course content API
-    url(r'^api/course_structure/', include('course_structure_api.urls', namespace='course_structure_api')),
-
     # Course API
-    url(r'^api/courses/', include('course_api.urls')),
+    url(r'^api/courses/', include('course_api.urls', namespace='course_api')),
 
     # Completion API
     url(r'^api/completion/', include('completion.api.urls', namespace='completion_api')),
