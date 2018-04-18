@@ -21,7 +21,7 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
   }
 
   deleteAccount() {
-    const { password } = this.state;
+    // const { password } = this.state;
     // console.log(`deleteAccount with password: ${password}`);
     // fetch.('/accounts/verify_password', {
     //   method: 'POST',
@@ -41,6 +41,15 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
     this.setState({ accountQueuedForDeletion: true });
   }
 
+  // TODO: hook into field validation somehow
+  failedSubmission() {
+    return {
+      isValid: false,
+      validationMessage: gettext('Password is incorrect'),
+      dangerIconDescription: 'Error',
+    };
+  }
+
   handleChange(value) {
     this.setState({ password: value });
   }
@@ -54,13 +63,6 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
         validationMessage: gettext('A Password is required'),
         dangerIconDescription: 'Error',
       };
-    // TODO: Add email validation
-    // } else if (value.length > 0) {
-    //   feedback = {
-    //     isValid: false,
-    //     validationMessage: gettext('Password is incorrect'),
-    //     dangerIconDescription: 'Error',
-    //   };
     }
 
     return feedback;
