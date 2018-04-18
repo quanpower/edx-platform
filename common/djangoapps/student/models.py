@@ -2136,6 +2136,19 @@ class CourseEnrollmentAllowed(models.Model):
         enrolled = CourseEnrollment.objects.users_enrolled_in(course_id=course_id).values_list('email', flat=True)
         return CourseEnrollmentAllowed.objects.filter(course_id=course_id).exclude(email__in=enrolled)
 
+    @classmethod
+    def retire_user(cls, user_email, hashed_email):
+        user_search_results = cls.objects.filter(
+            email=user_email
+        )
+        if not user_search_results:
+            return False
+
+        for user_record in user_search_results:
+            user_record.email = hashed_email
+
+        return True
+
 
 @total_ordering
 class CourseAccessRole(models.Model):
