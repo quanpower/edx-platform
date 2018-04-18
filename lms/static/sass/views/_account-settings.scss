@@ -554,6 +554,46 @@
 
       .paragon__modal-open {
         overflow-y: scroll;
+        color: $dark-gray;
+
+        .paragon__modal-title {
+          font-weight: $font-semibold;
+        }
+
+        .paragon__alert-warning {
+          color: $dark-gray;
+        }
+
+        .next-steps {
+          margin-bottom: 20px;
+          font-weight: $font-semibold;
+        }
+
+        .confirm-password-input {
+          width: 50%;
+        }
+      }
+
+      .modal-alert {
+        display: flex;
+
+        .icon-wrapper {
+          padding: {
+            top: 5px;
+            right: 15px;
+          }
+        }
+
+        .alert-content {
+          .alert-title {
+            color: $dark-gray;
+            margin-bottom: 20px;
+            font: {
+              size: 1rem;
+              weight: $font-semibold;
+            }
+          }
+        }
       }
     }
 

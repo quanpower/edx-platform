@@ -1,6 +1,7 @@
 /* globals gettext */
 /* eslint-disable react/no-danger */
 import React from 'react';
+import 'whatwg-fetch';
 import PropTypes from 'prop-types';
 import { Button, Modal, Icon, InputText, StatusAlert } from '@edx/paragon/static';
 import StringUtils from 'edx-ui-toolkit/js/utils/string-utils';
@@ -12,12 +13,32 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
     this.deleteAccount = this.deleteAccount.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.passwordFieldValidation = this.passwordFieldValidation.bind(this);
-    this.state = { password: '' };
+    this.state = {
+      password: '',
+      passwordSubmitted: false,
+      accountQueuedForDeletion: false,
+    };
   }
 
   deleteAccount() {
     const { password } = this.state;
-    console.log(`deleteAccount with password: ${password}`);
+    // console.log(`deleteAccount with password: ${password}`);
+    // fetch.('/accounts/verify_password', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify(data)
+    // }).then(response => {
+    //   if (response.ok) {
+    //     return dispatch(formSubmissionSuccess(response.json()));
+    //   } else {
+    //     const error = new Error(response.statusText);
+    //     error.response = response;
+    //     return dispatch(formSubmissionError(error));
+    //   }
+    // }).catch((error) => dispatch(formSubmissionError(error)));
+    this.setState({ accountQueuedForDeletion: true });
   }
 
   handleChange(value) {
@@ -34,19 +55,20 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
         dangerIconDescription: 'Error',
       };
     // TODO: Add email validation
-    } else if (value.length > 0) {
-      feedback = {
-        isValid: false,
-        validationMessage: gettext('Password is incorrect'),
-        dangerIconDescription: 'Error',
-      };
+    // } else if (value.length > 0) {
+    //   feedback = {
+    //     isValid: false,
+    //     validationMessage: gettext('Password is incorrect'),
+    //     dangerIconDescription: 'Error',
+    //   };
     }
 
     return feedback;
   }
 
-  render() {
+  renderConfirmationModal() {
     const { onClose } = this.props;
+    const { password } = this.state;
     const loseAccessText = StringUtils.interpolate(
       gettext('You may also lose access to verified certificates and other program credentials like MicroMasters certificates. If you want to make a copy of these for your records before proceeding with deletion, follow the instructions for {htmlStart}printing or downloading a certificate{htmlEnd}.'),
       {
@@ -59,6 +81,7 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
       <Modal
         title={gettext('Are you sure?')}
         onClose={onClose}
+        aria-live="polite"
         open
         body={(
           <div>
@@ -66,10 +89,10 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
               dialog={(
                 <div className="modal-alert">
                   <div className="icon-wrapper">
-                    <Icon className={['fa', 'fa-exclamation-triangle']} />
+                    <Icon className={['fa', 'fa-exclamation-triangle', 'fa-2x']} />
                   </div>
                   <div className="alert-content">
-                    <h2>{ gettext('You have selected “Delete my account.” Deletion of your account and personal data is permanent and cannot be undone. EdX will not be able to recover your account or the data that is deleted.') }</h2>
+                    <h3 className="alert-title">{ gettext('You have selected “Delete my account.” Deletion of your account and personal data is permanent and cannot be undone. EdX will not be able to recover your account or the data that is deleted.') }</h3>
                     <p>{ gettext('If you proceed, you will be unable to use this account to take courses on the edX app, edx.org, or any other site hosted by edX. This includes access to edx.org from your employer’s or university’s system and access to private sites offered by MIT Open Learning, Wharton Online, and Harvard Medical School.') }</p>
                     <p dangerouslySetInnerHTML={{ __html: loseAccessText }} />
                   </div>
@@ -78,11 +101,11 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
               dismissible={false}
               open
             />
-            <p>{ gettext('If you still wish to continue and delete your account, please enter your account password:') }</p>
+            <p className="next-steps">{ gettext('If you still wish to continue and delete your account, please enter your account password:') }</p>
             <InputText
-              name="password"
+              name="confirm-password"
               label="Password"
-              description="User password for edX.org"
+              className={['confirm-password-input']}
               validator={this.passwordFieldValidation}
               onChange={this.handleChange}
               autoComplete="new-password"
@@ -95,10 +118,31 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
           <Button
             label={gettext('Yes, Delete')}
             onClick={this.deleteAccount}
+            disabled={password.length === 0}
           />,
         ]}
       />
     );
+  }
+
+  renderSuccessModal() {
+    const { onClose } = this.props;
+
+    return (
+      <Modal
+        title={gettext('We\'re sorry to see you go!')}
+        body={gettext('Your account will be deleted in the next XX[hours/days/weeks].')}
+        onClose={onClose}
+        aria-live="polite"
+        open
+      />
+    );
+  }
+
+  render() {
+    const { accountQueuedForDeletion } = this.state;
+
+    return accountQueuedForDeletion ? this.renderSuccessModal() : this.renderConfirmationModal();
   }
 }
 
