@@ -249,7 +249,7 @@ class UnregisteredLearnerCohortAssignments(models.Model):
     course_id = CourseKeyField(max_length=255)
 
     @classmethod
-    def retire_user(cls, email_to_retire, hashed_email):
+    def retire_user(cls, email_to_retire):
         """
         Replaces all assignment records for email_to_retire with hashed_email.
         """
@@ -262,8 +262,7 @@ class UnregisteredLearnerCohortAssignments(models.Model):
         if not cohort_assignments:
             return False
 
-        for cohort_assignment in cohort_assignments:
-            cohort_assignment.email = hashed_email
-            cohort_assignment.save()
+        deleted_records = cohort_assignments.delete()
+        assert(deleted_records > 0)
 
         return True

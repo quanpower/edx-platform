@@ -898,25 +898,24 @@ class TestUnregisteredLearnerCohortAssignments(TestCase):
             email='learner@example.com'
         )
 
-    def test_retired_user_has_wiped_record(self):
-        hashed_email = 'learner-hashed-email'
+    def test_retired_user_has_deleted_record(self):
         was_retired = UnregisteredLearnerCohortAssignments.retire_user(
-            'learner@example.com',
-            hashed_email
+            'learner@example.com'
         )
-        self.cohort_assignment.refresh_from_db()
 
         self.assertTrue(was_retired)
-        self.assertEqual(self.cohort_assignment.email, hashed_email)
+
+        search_retired_user_results = \
+        UnregisteredLearnerCohortAssignments.objects.filter(
+            email=self.cohort_assignment.email
+        )
+        self.assertFalse(search_retired_user_results)
 
     def test_retired_user_with_no_cohort_returns_false(self):
-        hashed_email = 'learner-hashed-email'
         known_learner_email = self.cohort_assignment.email
         was_retired = UnregisteredLearnerCohortAssignments.retire_user(
-            'nonexistantlearner@example.com',
-            hashed_email
+            'nonexistantlearner@example.com'
         )
-        self.cohort_assignment.refresh_from_db()
 
         self.assertFalse(was_retired)
         self.assertEqual(self.cohort_assignment.email, known_learner_email)
