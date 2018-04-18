@@ -21,7 +21,22 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
   }
 
   deleteAccount() {
-    // const { password } = this.state;
+    const { password } = this.state;
+
+    fetch('/accounts/verify_password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password }),
+      }).then(function(response) {
+        console.log('response: ', response);
+        return response.json()
+      }).then(function(json) {
+        console.log('parsed json', json)
+      }).catch(function(ex) {
+        console.log('parsing failed', ex)
+      })
     // console.log(`deleteAccount with password: ${password}`);
     // fetch.('/accounts/verify_password', {
     //   method: 'POST',
@@ -107,6 +122,7 @@ class StudentAccountDeletionConfirmationModal extends React.Component {
             <InputText
               name="confirm-password"
               label="Password"
+              type="password"
               className={['confirm-password-input']}
               validator={this.passwordFieldValidation}
               onChange={this.handleChange}
