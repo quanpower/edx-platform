@@ -39,10 +39,10 @@ var $focusedElementBeforeModal,
 
 var reassignTabIndexesAndAriaHidden = function(focusableElementsFilterString, closeButtonId, modalId, mainPageId) {
     // Sets appropriate elements to tab indexable and properly sets aria_hidden on content outside of modal
-    // "focusableElementsString" is a string that indicates all elements that should be focusable
+    // "focusableElementsFilterString" is a string that indicates all elements that should be focusable
     // "closeButtonId" is the selector for the button that closes out the modal.
-    // "mainPageId" is the selector for the main part of the page
     // "modalId" is the selector for the modal being managed
+    // "mainPageId" is the selector for the main part of the page
     // Returns a list of focusableItems
     var focusableItems;
 
@@ -119,7 +119,7 @@ var bindEscapeKeyListener = function(modalId, closeButtonId) {
 
 var trapFocusForAccessibleModal = function(
     $previouslyFocusedElement,
-    focusableElementsMatchString,
+    focusableElementsFilterString,
     closeButtonId,
     modalId,
     mainPageId) {
@@ -128,7 +128,7 @@ var trapFocusForAccessibleModal = function(
     // to ensure that the correct elements are accessible.
     var focusableItems, $last;
     focusableItems = reassignTabIndexesAndAriaHidden(
-      focusableElementsMatchString,
+      focusableElementsFilterString,
       closeButtonId,
       modalId,
       mainPageId
