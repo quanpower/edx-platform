@@ -551,6 +551,10 @@
         padding: 11px 14px;
         line-height: normal;
       }
+
+      .paragon__modal-open {
+        overflow-y: scroll;
+      }
     }
 
     &:last-child {
