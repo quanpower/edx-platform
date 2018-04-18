@@ -906,9 +906,9 @@ class TestUnregisteredLearnerCohortAssignments(TestCase):
         self.assertTrue(was_retired)
 
         search_retired_user_results = \
-        UnregisteredLearnerCohortAssignments.objects.filter(
-            email=self.cohort_assignment.email
-        )
+            UnregisteredLearnerCohortAssignments.objects.filter(
+                email=self.cohort_assignment.email
+            )
         self.assertFalse(search_retired_user_results)
 
     def test_retired_user_with_no_cohort_returns_false(self):
